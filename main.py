@@ -38,9 +38,15 @@ ukrainian_df['ukrainian_transliteration'] = ukrainian_df['Ім\'я/назва с
   lambda word: re.sub(r'\s+', ' ', re.sub(r'[^a-zA-Z0-9 ]', '', translit(word, 'uk', reversed=True).lower()).strip())
 )
 
-ukrainian_df['russian_transliteration'] = ukrainian_df['russian_name'].progress_apply(
-  lambda word: re.sub(r'\s+', ' ', re.sub(r'[^a-zA-Z0-9 ]', '', translit(word, 'ru', reversed=True).lower()).strip())
-)
+try:
+  if ukrainian_df['english_name'] is not None:
+    ukrainian_df['russian_transliteration'] = ukrainian_df['english_name'].progress_apply(
+      lambda word: re.sub(r'\s+', ' ', re.sub(r'[^a-zA-Z0-9 ]', '', word).lower()).strip()
+    )
+except:
+  ukrainian_df['russian_transliteration'] = ukrainian_df['russian_name'].progress_apply(
+    lambda word: re.sub(r'\s+', ' ', re.sub(r'[^a-zA-Z0-9 ]', '', translit(word, 'ru', reversed=True).lower()).strip())
+  ) 
 
 # Function to calculate confidence score with normalization
 def calculate_confidence(english_word, translated_word):
@@ -71,6 +77,12 @@ ukrainian_df['confidence_score'] = confidence_scores
 ukrainian_df.drop('russian_name', axis=1, inplace=True)
 ukrainian_df.drop('ukrainian_transliteration', axis=1, inplace=True)
 ukrainian_df.drop('russian_transliteration', axis=1, inplace=True)
+
+try:
+  if ukrainian_df['english_name'] is not None:
+    ukrainian_df.drop('english_name', axis=1, inplace=True)
+except:
+  pass
 
 # Construct the output file name
 output_file_name = args.input_file.split('.')[0] + "_with_scores.csv"
