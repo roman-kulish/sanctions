@@ -1,8 +1,6 @@
 import pandas as pd
 import re
 import argparse
-import time
-from difflib import SequenceMatcher
 from tqdm import tqdm
 from transliterate import translit
 from fuzzywuzzy import fuzz
@@ -43,7 +41,6 @@ ukrainian_df['english_transliteration'] = ukrainian_df['Ім\'я/назва су
 # Function to calculate confidence score with normalization
 def calculate_confidence(english_word, translated_word):
   return fuzz.ratio(english_word, translated_word) / 100  # Normalize to 0-1 range
-#   return SequenceMatcher(None, english_word, translated_word.lower()).ratio()
 
 # Calculate confidence scores
 confidence_scores = []
