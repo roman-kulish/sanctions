@@ -55,9 +55,11 @@ def calculate_confidence(english_word, translated_word):
 # Calculate confidence scores
 confidence_scores = []
 matched_words = []
+countries = []
 for index, row in tqdm(ukrainian_df.iterrows(), total=ukrainian_df.shape[0], desc="Calculating Confidence Scores"):
   max_score = 0
   last_word = ''
+  country = ''
   for english_index, english_word in english_df['normalized'].items():  # Iterate over index and value
     score_ukrainian = calculate_confidence(english_word, row['ukrainian_transliteration'])
     score_russian = calculate_confidence(english_word, row['russian_transliteration'])
@@ -66,12 +68,15 @@ for index, row in tqdm(ukrainian_df.iterrows(), total=ukrainian_df.shape[0], des
     if score > max_score:
       max_score = score
       last_word = english_df.loc[english_index, 'Dictionary']  # Retrieve original word
+      country = english_df.loc[english_index, 'Countries']
   matched_words.append(last_word)
+  countries.append(country)
   confidence_scores.append(max_score)
 
 # Append scores to the dataframe
 ukrainian_df['matched_word'] = matched_words
 ukrainian_df['confidence_score'] = confidence_scores
+ukrainian_df['countries'] = countries
 
 # Drop the transliteration columns
 ukrainian_df.drop('russian_name', axis=1, inplace=True)
