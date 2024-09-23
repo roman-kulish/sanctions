@@ -36,8 +36,8 @@ ukrainian_df = ukrainian_df[0:50]
 
 # Function to calculate confidence score with normalization
 def calculate_confidence(english_word, translated_word):
-#   return fuzz.ratio(english_word, translated_word) / 100  # Normalize to 0-1 range
-  return SequenceMatcher(None, english_word, translated_word.lower()).ratio()
+  return fuzz.ratio(english_word, translated_word) / 100  # Normalize to 0-1 range
+#   return SequenceMatcher(None, english_word, translated_word.lower()).ratio()
 
 # Calculate confidence scores
 confidence_scores = []
