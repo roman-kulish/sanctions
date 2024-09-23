@@ -13,23 +13,31 @@ tqdm.pandas()
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description='Process a CSV file and add confidence scores.')
 parser.add_argument('-i', '--input_file', required=True, help='The path to the second CSV file')
+parser.add_argument('-d', '--input_dictionary', required=True, help='The path to the dictionary CSV file')
 args = parser.parse_args()
 
 # Load data from CSV files
-english_df = pd.read_csv('dictionary.csv')
+english_df = pd.read_csv(args.input_dictionary)
 
 # Deduplicate the English dictionary
 english_df.drop_duplicates(subset=['Dictionary'], inplace=True)
 
-# Normalise text
-english_df['normalized'] = english_df['Dictionary'].astype(str).str.lower().replace(r'[^a-zA-Z0-9 ]', '', regex=True)
+# Normalise text (including trimming and space normalization)
+english_df['normalized'] = (
+  english_df['Dictionary']
+  .astype(str)
+  .str.lower()
+  .str.replace(r'[^a-zA-Z0-9 ]', '', regex=True)  # Remove non-alphanumeric characters except spaces
+  .str.strip()  # Trim leading/trailing spaces
+  .str.replace(r'\s+', ' ', regex=True)  # Normalize multiple spaces to single space
+)
 
 # Load data from the second CSV (specified by the user)
 ukrainian_df = pd.read_csv(args.input_file)
 
 # Transliterate and normalize Ukrainian words with progress bar
 ukrainian_df['english_transliteration'] = ukrainian_df['Ім\'я/назва суб\'єкта'].progress_apply(
-    lambda word: re.sub(r'[^a-zA-Z0-9 ]', '', translit(word, 'uk', reversed=True).lower())
+  lambda word: re.sub(r'\s+', ' ', re.sub(r'[^a-zA-Z0-9 ]', '', translit(word, 'uk', reversed=True).lower()).strip())
 )
 
 ukrainian_df = ukrainian_df[0:50]
