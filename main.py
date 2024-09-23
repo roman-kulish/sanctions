@@ -34,8 +34,12 @@ english_df['normalized'] = (
 ukrainian_df = pd.read_csv(args.input_file)
 
 # Transliterate and normalize Ukrainian words with progress bar
-ukrainian_df['english_transliteration'] = ukrainian_df['Ім\'я/назва суб\'єкта'].progress_apply(
+ukrainian_df['ukrainian_transliteration'] = ukrainian_df['Ім\'я/назва суб\'єкта'].progress_apply(
   lambda word: re.sub(r'\s+', ' ', re.sub(r'[^a-zA-Z0-9 ]', '', translit(word, 'uk', reversed=True).lower()).strip())
+)
+
+ukrainian_df['russian_transliteration'] = ukrainian_df['russian_name'].progress_apply(
+  lambda word: re.sub(r'\s+', ' ', re.sub(r'[^a-zA-Z0-9 ]', '', translit(word, 'ru', reversed=True).lower()).strip())
 )
 
 # Function to calculate confidence score with normalization
@@ -49,7 +53,10 @@ for index, row in tqdm(ukrainian_df.iterrows(), total=ukrainian_df.shape[0], des
   max_score = 0
   last_word = ''
   for english_index, english_word in english_df['normalized'].items():  # Iterate over index and value
-    score = calculate_confidence(english_word, row['english_transliteration'])
+    score_ukrainian = calculate_confidence(english_word, row['ukrainian_transliteration'])
+    score_russian = calculate_confidence(english_word, row['russian_transliteration'])
+    score = max(score_ukrainian, score_russian)  # Take the higher score
+
     if score > max_score:
       max_score = score
       last_word = english_df.loc[english_index, 'Dictionary']  # Retrieve original word
@@ -60,8 +67,10 @@ for index, row in tqdm(ukrainian_df.iterrows(), total=ukrainian_df.shape[0], des
 ukrainian_df['matched_word'] = matched_words
 ukrainian_df['confidence_score'] = confidence_scores
 
-# Drop the 'english_transliteration' column
-ukrainian_df.drop('english_transliteration', axis=1, inplace=True)
+# Drop the transliteration columns
+ukrainian_df.drop('russian_name', axis=1, inplace=True)
+ukrainian_df.drop('ukrainian_transliteration', axis=1, inplace=True)
+ukrainian_df.drop('russian_transliteration', axis=1, inplace=True)
 
 # Construct the output file name
 output_file_name = args.input_file.split('.')[0] + "_with_scores.csv"
