@@ -1,0 +1,4 @@
+.vscode
+.DS_Store
+registry_companies_with_score.csv
+registry_individuals_with_score.csv

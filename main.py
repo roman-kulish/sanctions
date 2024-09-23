@@ -40,8 +40,6 @@ ukrainian_df['english_transliteration'] = ukrainian_df['Ім\'я/назва су
   lambda word: re.sub(r'\s+', ' ', re.sub(r'[^a-zA-Z0-9 ]', '', translit(word, 'uk', reversed=True).lower()).strip())
 )
 
-ukrainian_df = ukrainian_df[0:50]
-
 # Function to calculate confidence score with normalization
 def calculate_confidence(english_word, translated_word):
   return fuzz.ratio(english_word, translated_word) / 100  # Normalize to 0-1 range
